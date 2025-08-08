@@ -1,3 +1,5 @@
+console.log("test");
+
 // Lottie animations controller using lottie-web
 const lottieAnimations = new Map(); // Store animation instances
 
@@ -11,6 +13,7 @@ function discoverLottieElements() {
   elementsWithDataSrc.forEach((element) => {
     const dataSrc = element.getAttribute("data-src");
     if (dataSrc && dataSrc.includes(".json")) {
+      // Load all Lottie elements regardless of device
       lottieElements.push({
         element: element,
         path: dataSrc,
@@ -88,12 +91,15 @@ function setupIntersectionObserver(element) {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       const animation = lottieAnimations.get(entry.target);
+      const isMobile = window.innerWidth < 991;
 
       if (entry.isIntersecting) {
-        // Element entered viewport - play animation
-        if (animation) {
+        // Element entered viewport - play animation only on desktop
+        if (animation && !isMobile) {
           animation.play();
           console.log("Playing Lottie animation");
+        } else if (isMobile) {
+          console.log("Lottie animation disabled on mobile");
         }
       } else {
         // Element left viewport - pause animation
@@ -104,10 +110,59 @@ function setupIntersectionObserver(element) {
       }
     });
   }, observerOptions);
-
+  //sads
   observer.observe(element);
 }
 
 // Initialize when DOM is ready
 
 document.addEventListener("DOMContentLoaded", initLottieScrollAnimations);
+
+document.addEventListener("DOMContentLoaded", () => {
+  const lineAnims = document.querySelectorAll(".line-anim");
+  const scrubAnims = document.querySelectorAll(".scrub-anim");
+
+  // Wait for fonts to load before initializing line animations
+  document.fonts.ready.then(() => {
+    lineAnims.forEach((lineAnim) => {
+      let splitText = new SplitText(lineAnim, { type: "lines", mask: "lines" });
+      let lines = splitText.lines;
+      gsap.set(lines, { y: "100%" });
+      gsap.to(lines, {
+        y: `0%`,
+        duration: 1,
+        ease: "power4.out",
+        stagger: {
+          each: 0.1,
+          // onComplete: () => {
+          //   splitText.revert();
+          // },
+        },
+        scrollTrigger: {
+          trigger: lineAnim,
+          start: "top 90%",
+          toggleActions: "play none none reverse",
+        },
+      });
+    });
+  });
+  scrubAnims.forEach((scrubAnim) => {
+    let splitText = new SplitText(scrubAnim, { type: "words" });
+    let words = splitText.words;
+    gsap.set(words, { opacity: 0.2 });
+    gsap.to(words, {
+      opacity: 1,
+      duration: 0.2,
+      ease: "power1.out",
+      stagger: {
+        each: 0.4,
+      },
+      scrollTrigger: {
+        trigger: scrubAnim,
+        start: "top 90%",
+        end: "top center",
+        scrub: true,
+      },
+    });
+  });
+});
