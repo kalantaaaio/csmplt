@@ -13,27 +13,12 @@ function discoverLottieElements() {
   elementsWithDataSrc.forEach((element) => {
     const dataSrc = element.getAttribute("data-src");
     if (dataSrc && dataSrc.includes(".json")) {
-      // Check if we're on mobile (< 991px)
-      const isMobile = window.innerWidth < 991;
-
-      if (isMobile) {
-        // On mobile, only include elements with .must-play-mob parent
-        const mustPlayMobParent = element.closest(".must-play-mob");
-        if (mustPlayMobParent) {
-          lottieElements.push({
-            element: element,
-            path: dataSrc,
-          });
-          console.log(`Found mobile Lottie element with path: ${dataSrc}`);
-        }
-      } else {
-        // On desktop, include all Lottie elements
-        lottieElements.push({
-          element: element,
-          path: dataSrc,
-        });
-        console.log(`Found Lottie element with path: ${dataSrc}`);
-      }
+      // Load all Lottie elements regardless of device
+      lottieElements.push({
+        element: element,
+        path: dataSrc,
+      });
+      console.log(`Found Lottie element with path: ${dataSrc}`);
     }
   });
 
@@ -106,12 +91,15 @@ function setupIntersectionObserver(element) {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       const animation = lottieAnimations.get(entry.target);
+      const isMobile = window.innerWidth < 991;
 
       if (entry.isIntersecting) {
-        // Element entered viewport - play animation
-        if (animation) {
+        // Element entered viewport - play animation only on desktop
+        if (animation && !isMobile) {
           animation.play();
           console.log("Playing Lottie animation");
+        } else if (isMobile) {
+          console.log("Lottie animation disabled on mobile");
         }
       } else {
         // Element left viewport - pause animation
