@@ -26,6 +26,7 @@ function initLottieScrollAnimations() {
       if (entry.isIntersecting) {
         // Element is in view - play animation
         if (animation) {
+          animation.setLoop(true);
           animation.play();
           console.log('Playing Lottie animation');
         } else {
