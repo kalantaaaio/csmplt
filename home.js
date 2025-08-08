@@ -15,10 +15,10 @@ function discoverLottieElements() {
     if (dataSrc && dataSrc.includes(".json")) {
       // Check if we're on mobile (< 991px)
       const isMobile = window.innerWidth < 991;
-      
+
       if (isMobile) {
         // On mobile, only include elements with .must-play-mob parent
-        const mustPlayMobParent = element.closest('.must-play-mob');
+        const mustPlayMobParent = element.closest(".must-play-mob");
         if (mustPlayMobParent) {
           lottieElements.push({
             element: element,
@@ -122,7 +122,7 @@ function setupIntersectionObserver(element) {
       }
     });
   }, observerOptions);
-
+  //sads
   observer.observe(element);
 }
 
