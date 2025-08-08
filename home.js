@@ -30,7 +30,7 @@ function initLottieScrollAnimations() {
   // Check if lottie library is loaded
   if (typeof lottie === "undefined") {
     console.error("Lottie library not loaded yet, retrying in 1 second...");
-    setTimeout(initLottieScrollAnimations, 1000);
+    //setTimeout(initLottieScrollAnimations, 1000);
     return;
   }
 
