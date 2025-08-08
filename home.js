@@ -130,9 +130,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ease: "power4.out",
         stagger: {
           each: 0.1,
-          onComplete: () => {
-            splitText.revert();
-          },
+          // onComplete: () => {
+          //   splitText.revert();
+          // },
         },
         scrollTrigger: {
           trigger: lineAnim,
