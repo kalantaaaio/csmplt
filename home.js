@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", initLottieScrollAnimations);
 document.addEventListener("DOMContentLoaded", () => {
   const lineAnims = document.querySelectorAll(".line-anim");
   const scrubAnims = document.querySelectorAll(".scrub-anim");
-  
+
   // Wait for fonts to load before initializing line animations
   document.fonts.ready.then(() => {
     lineAnims.forEach((lineAnim) => {
