@@ -125,40 +125,71 @@ window.addEventListener("load", () => {
 setTimeout(initLottieScrollAnimations, 2000);
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Check if required libraries are loaded
+  if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined" || typeof SplitText === "undefined") {
+    console.error("Required libraries not loaded: gsap, ScrollTrigger, or SplitText");
+    return;
+  }
+  
   const lineAnims = document.querySelectorAll(".line-anim");
   const scrubAnims = document.querySelectorAll(".scrub-anim");
 
   function initLineAnimation(lineAnim) {
-    let splitText = new SplitText(lineAnim, { type: "lines", mask: "lines" });
-    let lines = splitText.lines;
-    gsap.set(lines, { y: "100%" });
+    let splitText;
+    let lines;
+    let scrollTriggerInstance;
 
-    const animation = gsap.to(lines, {
-      y: `0%`,
-      duration: 1,
-      ease: "power4.out",
-      stagger: {
-        each: 0.1,
-      },
-      scrollTrigger: {
+    function createAnimation() {
+      // Clean up previous instances
+      if (splitText) {
+        splitText.revert();
+      }
+      if (scrollTriggerInstance) {
+        scrollTriggerInstance.kill();
+      }
+
+      // Create new SplitText instance
+      splitText = new SplitText(lineAnim, { type: "lines", mask: "lines" });
+      lines = splitText.lines;
+      
+      // Set initial state
+      gsap.set(lines, { y: "100%" });
+
+      // Create the animation with ScrollTrigger
+      scrollTriggerInstance = ScrollTrigger.create({
         trigger: lineAnim,
         start: "top 90%",
         toggleActions: "play none none reverse",
+        animation: gsap.to(lines, {
+          y: "0%",
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.1,
+        }),
         onComplete: () => {
-          splitText.revert();
+          // Only revert after animation completes and is not reversed
+          if (splitText) {
+            splitText.revert();
+          }
         },
-        onRefresh: () => {
-          // Пересобрати лінії при зміні розміру екрана
-          splitText.revert();
-          splitText = new SplitText(lineAnim, { type: "lines", mask: "lines" });
-          lines = splitText.lines;
-          gsap.set(lines, { y: "100%" });
-          animation.vars.stagger.each = 0.1;
-        },
-      },
-    });
+      });
+    }
 
-    return { animation, splitText };
+    // Initial creation
+    createAnimation();
+
+    // Return cleanup function
+    return {
+      refresh: createAnimation,
+      destroy: () => {
+        if (splitText) {
+          splitText.revert();
+        }
+        if (scrollTriggerInstance) {
+          scrollTriggerInstance.kill();
+        }
+      }
+    };
   }
 
   const lineAnimInstances = new Map();
@@ -168,11 +199,17 @@ document.addEventListener("DOMContentLoaded", () => {
     lineAnimInstances.set(lineAnim, instance);
   });
 
-  // Обробити зміну розміру вікна та орієнтації
+  // Handle window resize and orientation change
   let resizeTimer;
   function handleResize() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
+      // Refresh all line animations
+      lineAnimInstances.forEach((instance) => {
+        instance.refresh();
+      });
+      
+      // Refresh ScrollTrigger after recreating animations
       ScrollTrigger.refresh();
     }, 250);
   }
