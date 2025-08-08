@@ -117,27 +117,82 @@ document.addEventListener("DOMContentLoaded", initLottieScrollAnimations);
 document.addEventListener("DOMContentLoaded", () => {
   const lineAnims = document.querySelectorAll(".line-anim");
   const scrubAnims = document.querySelectorAll(".scrub-anim");
-  lineAnims.forEach((lineAnim) => {
-    let splitText = new SplitText(lineAnim, { type: "lines", mask: "lines" });
-    let lines = splitText.lines;
-    gsap.set(lines, { y: "100%" });
-    gsap.to(lines, {
-      y: `0%`,
-      duration: 1,
-      ease: "power4.out",
-      stagger: {
-        each: 0.1,
-        onComplete: () => {
+  
+  // Wait for layout to settle before initializing line animations
+  setTimeout(() => {
+    lineAnims.forEach((lineAnim) => {
+      let splitText, lines, animation;
+      let resizeTimeout;
+      
+      function initLineAnim() {
+        // Clean up previous animation and split
+        if (animation) {
+          animation.kill();
+        }
+        if (splitText) {
           splitText.revert();
-        },
-      },
-      scrollTrigger: {
-        trigger: lineAnim,
-        start: "top 90%",
-        toggleActions: "play none none reverse",
-      },
+        }
+        
+        // Force a reflow to ensure accurate measurements
+        lineAnim.offsetHeight;
+        
+        splitText = new SplitText(lineAnim, { type: "lines", mask: "lines" });
+        lines = splitText.lines;
+        gsap.set(lines, { y: "100%" });
+        
+        animation = gsap.to(lines, {
+          y: `0%`,
+          duration: 1,
+          ease: "power4.out",
+          stagger: {
+            each: 0.1,
+            onComplete: () => {
+              splitText.revert();
+            },
+          },
+          scrollTrigger: {
+            trigger: lineAnim,
+            start: "top 90%",
+            toggleActions: "play none none reverse",
+          },
+        });
+        
+        return animation;
+      }
+      
+      // Initialize the animation
+      initLineAnim();
+      
+      // Handle resize events with debouncing
+      if (window.ResizeObserver) {
+        const resizeObserver = new ResizeObserver(() => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            // Re-initialize only if the element width changed significantly
+            initLineAnim();
+          }, 150);
+        });
+        
+        resizeObserver.observe(lineAnim);
+      } else {
+        // Fallback for browsers without ResizeObserver
+        let lastWidth = lineAnim.offsetWidth;
+        const handleResize = () => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            const currentWidth = lineAnim.offsetWidth;
+            if (Math.abs(currentWidth - lastWidth) > 10) {
+              lastWidth = currentWidth;
+              initLineAnim();
+            }
+          }, 150);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+      }
     });
-  });
+  }, 100);
   scrubAnims.forEach((scrubAnim) => {
     let splitText = new SplitText(scrubAnim, { type: "words" });
     let words = splitText.words;
