@@ -111,11 +111,8 @@ function setupIntersectionObserver(element) {
 }
 
 // Initialize when DOM is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initLottieScrollAnimations);
-} else {
-  initLottieScrollAnimations();
-}
+
+document.addEventListener("DOMContentLoaded", initLottieScrollAnimations);
 
 document.addEventListener("DOMContentLoaded", () => {
   const lineAnims = document.querySelectorAll(".line-anim");
