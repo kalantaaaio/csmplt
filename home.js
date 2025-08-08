@@ -1,150 +1,124 @@
 console.log("test");
 
-// Lottie Scroll Animation Controller
+// Lottie animations controller using lottie-web
+const lottieAnimations = new Map(); // Store animation instances
+
+// Configuration for your Lottie animations
+const lottieConfig = [
+  {
+    selector: ".hero_letters",
+    path: "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/689344522ec99b24ba6a571b_csmplt.json",
+  },
+
+  {
+    selector: ".clients_tabs-pane.is--1",
+    path: "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/689071294b93cedd9656e4a2_b-pc.json",
+  },
+  {
+    selector: ".clients_tabs-pane.is--2",
+    path: "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/6890712c5b9f9ce7f748f753_t-pc.json",
+  },
+];
+
 function initLottieScrollAnimations() {
-  console.log('Initializing Lottie scroll animations...');
-  
-  // Wait a bit for Webflow to load Lottie elements
-  setTimeout(() => {
-    // Try multiple selectors for Webflow Lottie elements
-    const lottieElements = document.querySelectorAll('[data-w-id], .w-lottie, [data-animation-type="lottie"], .lottie, [data-autoplay]');
-    console.log(`Found ${lottieElements.length} potential Lottie elements`);
-    
-    // Remove autoplay attributes from all found elements
-    lottieElements.forEach(element => {
-      if (element.hasAttribute('data-autoplay')) {
-        element.removeAttribute('data-autoplay');
-        console.log('Removed data-autoplay attribute');
-      }
-      // Also remove any autoplay from child elements
-      const autoplayChildren = element.querySelectorAll('[data-autoplay]');
-      autoplayChildren.forEach(child => {
-        child.removeAttribute('data-autoplay');
-        console.log('Removed data-autoplay from child');
-      });
-    });
-    
-    if (lottieElements.length === 0) {
-      console.log('No Lottie elements found, retrying in 2 seconds...');
-      setTimeout(initLottieScrollAnimations, 2000);
-      return;
-    }
-    
-    // Intersection Observer options
-    const observerOptions = {
-      root: null,
-      rootMargin: '20px',
-      threshold: 0.1
-    };
-    
-    // Create intersection observer
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const element = entry.target;
-        
-        if (entry.isIntersecting) {
-          // Element entered viewport - start animation
-          console.log('Lottie entered viewport, starting animation');
-          startLottieAnimation(element);
-        } else {
-          // Element left viewport - stop animation
-          console.log('Lottie left viewport, stopping animation');
-          stopLottieAnimation(element);
-        }
-      });
-    }, observerOptions);
-    
-    // Observe all potential Lottie elements
-    lottieElements.forEach(element => {
-      observer.observe(element);
-      // Initially stop all animations
-      stopLottieAnimation(element);
-    });
-    
-  }, 1000); // Wait 1 second for Webflow to initialize
-}
+  console.log("Initializing custom Lottie scroll animations...");
 
-function startLottieAnimation(element) {
-  // Method 1: Try Webflow's built-in method
-  if (element.getLottie) {
-    const animation = element.getLottie();
-    if (animation) {
-      animation.loop = true;
-      animation.play();
-      console.log('Started Lottie via getLottie()');
-      return;
-    }
+  // Check if lottie library is loaded
+  if (typeof lottie === "undefined") {
+    console.error("Lottie library not loaded yet, retrying in 1 second...");
+    setTimeout(initLottieScrollAnimations, 1000);
+    return;
   }
-  
-  // Method 2: Try triggering Webflow interaction
-  if (element.click) {
-    element.style.visibility = 'visible';
-    element.style.opacity = '1';
-  }
-  
-  // Method 3: Dispatch custom events
-  const playEvent = new CustomEvent('lottie-play');
-  element.dispatchEvent(playEvent);
-  
-  // Method 4: Try to find and manipulate nested animation
-  const animationContainer = element.querySelector('[data-animation-type="lottie"]') || element;
-  if (animationContainer && animationContainer.getLottie) {
-    const anim = animationContainer.getLottie();
-    if (anim) {
-      anim.loop = true;
-      anim.play();
-      console.log('Started nested Lottie animation');
-    }
-  }
-}
 
-function stopLottieAnimation(element) {
-  // Forcefully remove autoplay attribute
-  element.removeAttribute('data-autoplay');
-  
-  // Method 1: Try Webflow's built-in method
-  if (element.getLottie) {
-    const animation = element.getLottie();
-    if (animation) {
-      animation.pause();
-      animation.stop();
-      console.log('Stopped Lottie via getLottie()');
-      return;
-    }
-  }
-  
-  // Method 2: Try to find and stop all Lottie instances
-  const allLottieElements = element.querySelectorAll('*');
-  allLottieElements.forEach(child => {
-    if (child.getLottie) {
-      const anim = child.getLottie();
-      if (anim) {
-        anim.pause();
-        anim.stop();
-        console.log('Stopped child Lottie animation');
-      }
-    }
-    // Remove autoplay from children too
-    child.removeAttribute('data-autoplay');
+  // Remove existing Webflow Lottie elements to avoid conflicts
+  const webflowLotties = document.querySelectorAll(
+    '[data-animation-type="lottie"], .w-lottie, [data-w-id*="lottie"]'
+  );
+  webflowLotties.forEach((element) => {
+    // Clear the element content but keep the container
+    element.innerHTML = "";
+    element.removeAttribute("data-animation-type");
+    element.removeAttribute("data-autoplay");
+    console.log("Cleared Webflow Lottie element");
   });
-  
-  // Method 3: Hide element temporarily to stop animation
-  const originalDisplay = element.style.display;
-  element.style.display = 'none';
-  setTimeout(() => {
-    element.style.display = originalDisplay;
-  }, 50);
-  
-  console.log('Attempted to stop Lottie animation');
+
+  // Initialize custom Lottie animations
+  lottieConfig.forEach((config, index) => {
+    const container = document.querySelector(config.selector);
+    if (!container) {
+      console.warn(`Container not found for selector: ${config.selector}`);
+      return;
+    }
+
+    // Clear container
+    container.innerHTML = "";
+
+    // Create Lottie animation
+    try {
+      const animation = lottie.loadAnimation({
+        container: container,
+        path: config.path,
+        renderer: "svg",
+        loop: true,
+        autoplay: false,
+      });
+
+      // Store animation reference
+      lottieAnimations.set(container, animation);
+
+      console.log(`Lottie animation loaded for: ${config.selector}`);
+
+      // Set up intersection observer for this element
+      setupIntersectionObserver(container);
+    } catch (error) {
+      console.error(
+        `Error loading Lottie animation for ${config.selector}:`,
+        error
+      );
+    }
+  });
 }
 
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', initLottieScrollAnimations);
+function setupIntersectionObserver(element) {
+  const observerOptions = {
+    root: null,
+    rootMargin: "50px",
+    threshold: 0.1,
+  };
 
-// Also try after window load (for safety)
-window.addEventListener('load', () => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const animation = lottieAnimations.get(entry.target);
+
+      if (entry.isIntersecting) {
+        // Element entered viewport - play animation
+        if (animation) {
+          animation.play();
+          console.log("Playing Lottie animation");
+        }
+      } else {
+        // Element left viewport - pause animation
+        if (animation) {
+          animation.pause();
+          console.log("Pausing Lottie animation");
+        }
+      }
+    });
+  }, observerOptions);
+
+  observer.observe(element);
+}
+
+// Initialize when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initLottieScrollAnimations);
+} else {
+  initLottieScrollAnimations();
+}
+
+// Also try after window load and with delays to ensure lottie library is loaded
+window.addEventListener("load", () => {
   setTimeout(initLottieScrollAnimations, 500);
 });
 
-// Retry initialization if needed
-setTimeout(initLottieScrollAnimations, 3000);
+setTimeout(initLottieScrollAnimations, 2000);
