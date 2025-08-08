@@ -6,21 +6,21 @@ const lottieAnimations = new Map(); // Store animation instances
 // Auto-discover Lottie animations from data-src attributes
 function discoverLottieElements() {
   const lottieElements = [];
-  
+
   // Find all elements with data-src attribute (Webflow Lottie elements)
   const elementsWithDataSrc = document.querySelectorAll('[data-src*=".json"]');
-  
-  elementsWithDataSrc.forEach(element => {
-    const dataSrc = element.getAttribute('data-src');
-    if (dataSrc && dataSrc.includes('.json')) {
+
+  elementsWithDataSrc.forEach((element) => {
+    const dataSrc = element.getAttribute("data-src");
+    if (dataSrc && dataSrc.includes(".json")) {
       lottieElements.push({
         element: element,
-        path: dataSrc
+        path: dataSrc,
       });
       console.log(`Found Lottie element with path: ${dataSrc}`);
     }
   });
-  
+
   return lottieElements;
 }
 
@@ -38,10 +38,10 @@ function initLottieScrollAnimations() {
 
   // Auto-discover and initialize Lottie animations
   const discoveredLotties = discoverLottieElements();
-  
+
   discoveredLotties.forEach((lottieData) => {
     const container = lottieData.element;
-    
+
     // Clear container content but preserve attributes except Webflow-specific ones
     container.innerHTML = "";
     container.removeAttribute("data-animation-type");
@@ -49,8 +49,10 @@ function initLottieScrollAnimations() {
     container.removeAttribute("data-loop");
     container.removeAttribute("data-direction");
     container.removeAttribute("data-bounding");
-    
-    console.log("Cleared Webflow Lottie element, preparing for custom animation");
+
+    console.log(
+      "Cleared Webflow Lottie element, preparing for custom animation"
+    );
 
     // Create Lottie animation
     try {
@@ -121,3 +123,79 @@ window.addEventListener("load", () => {
 });
 
 setTimeout(initLottieScrollAnimations, 2000);
+
+document.addEventListener("DOMContentLoaded", () => {
+  const lineAnims = document.querySelectorAll(".line-anim");
+  const scrubAnims = document.querySelectorAll(".scrub-anim");
+
+  function initLineAnimation(lineAnim) {
+    let splitText = new SplitText(lineAnim, { type: "lines", mask: "lines" });
+    let lines = splitText.lines;
+    gsap.set(lines, { y: "100%" });
+
+    const animation = gsap.to(lines, {
+      y: `0%`,
+      duration: 1,
+      ease: "power4.out",
+      stagger: {
+        each: 0.1,
+      },
+      scrollTrigger: {
+        trigger: lineAnim,
+        start: "top 90%",
+        toggleActions: "play none none reverse",
+        onComplete: () => {
+          splitText.revert();
+        },
+        onRefresh: () => {
+          // Пересобрати лінії при зміні розміру екрана
+          splitText.revert();
+          splitText = new SplitText(lineAnim, { type: "lines", mask: "lines" });
+          lines = splitText.lines;
+          gsap.set(lines, { y: "100%" });
+          animation.vars.stagger.each = 0.1;
+        },
+      },
+    });
+
+    return { animation, splitText };
+  }
+
+  const lineAnimInstances = new Map();
+
+  lineAnims.forEach((lineAnim) => {
+    const instance = initLineAnimation(lineAnim);
+    lineAnimInstances.set(lineAnim, instance);
+  });
+
+  // Обробити зміну розміру вікна та орієнтації
+  let resizeTimer;
+  function handleResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 250);
+  }
+
+  window.addEventListener("resize", handleResize);
+  window.addEventListener("orientationchange", handleResize);
+  scrubAnims.forEach((scrubAnim) => {
+    let splitText = new SplitText(scrubAnim, { type: "words" });
+    let words = splitText.words;
+    gsap.set(words, { opacity: 0.2 });
+    gsap.to(words, {
+      opacity: 1,
+      duration: 0.2,
+      ease: "power1.out",
+      stagger: {
+        each: 0.4,
+      },
+      scrollTrigger: {
+        trigger: scrubAnim,
+        start: "top 90%",
+        end: "top center",
+        scrub: true,
+      },
+    });
+  });
+});
