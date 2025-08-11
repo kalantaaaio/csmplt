@@ -92,30 +92,14 @@ function setupIntersectionObserver(element) {
     entries.forEach((entry) => {
       const animation = lottieAnimations.get(entry.target);
       const isMobile = window.innerWidth < 991;
-      const isInHeroLetters = entry.target.closest(".hero_letters") !== null;
-      const isFirstLottieInHeroLetters =
-        isInHeroLetters &&
-        entry.target ===
-          entry.target
-            .closest(".hero_letters")
-            .querySelector('[data-src*=".json"]');
 
       if (entry.isIntersecting) {
-        // Play animation logic
+        // Element entered viewport - play animation only on desktop
         if (animation && !isMobile) {
-          // Desktop: play all animations
           animation.play();
-          console.log("Playing Lottie animation on desktop");
-        } else if (animation && isMobile && isFirstLottieInHeroLetters) {
-          // Mobile: only play first animation in hero_letters
-          animation.play();
-          console.log(
-            "Playing first Lottie animation in hero_letters on mobile"
-          );
+          console.log("Playing Lottie animation");
         } else if (isMobile) {
-          console.log(
-            "Lottie animation disabled on mobile (not first in hero_letters)"
-          );
+          console.log("Lottie animation disabled on mobile");
         }
       } else {
         // Element left viewport - pause animation

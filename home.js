@@ -17,6 +17,7 @@ function discoverLottieElements() {
     const isInHeroLetters = element.closest(".hero_letters") !== null;
 
     if (dataSrc && dataSrc.includes(".json")) {
+      // Load all Lottie elements regardless of device
       // Use mobile version for hero_letters on mobile, otherwise use regular version
       let animationPath = dataSrc;
       if (
@@ -31,8 +32,10 @@ function discoverLottieElements() {
 
       lottieElements.push({
         element: element,
+        path: dataSrc,
         path: animationPath,
       });
+      console.log(`Found Lottie element with path: ${dataSrc}`);
       console.log(`Found Lottie element with path: ${animationPath}`);
     }
   });
@@ -75,54 +78,9 @@ function initLottieScrollAnimations() {
       const animation = lottie.loadAnimation({
         container: container,
         path: lottieData.path,
-        renderer: "canvas",
+        renderer: "svg",
         loop: true,
         autoplay: false,
-        rendererSettings: {
-          preserveAspectRatio: "xMidYMid slice",
-          clearCanvas: true,
-          progressiveLoad: false,
-          hideOnTransparent: true,
-          viewBoxOnly: true,
-        },
-      });
-
-      // Функція для правильного розміру canvas
-      const resizeCanvas = () => {
-        const canvas = container.querySelector("canvas");
-        if (canvas) {
-          const rect = container.getBoundingClientRect();
-          const dpr = window.devicePixelRatio || 1;
-          
-          // Встановити внутрішні розміри canvas
-          canvas.width = rect.width * dpr;
-          canvas.height = rect.height * dpr;
-          
-          // Встановити CSS розміри
-          canvas.style.width = rect.width + "px";
-          canvas.style.height = rect.height + "px";
-          canvas.style.display = "block";
-          
-          // Масштабувати контекст для високої щільності пікселів
-          const ctx = canvas.getContext("2d");
-          ctx.scale(dpr, dpr);
-          
-          // Перерендерити анімацію
-          animation.resize();
-          console.log(`Canvas resized: ${rect.width}x${rect.height}`);
-        }
-      };
-
-      animation.addEventListener("DOMLoaded", () => {
-        resizeCanvas();
-        
-        // ResizeObserver для автоматичного ресайзу
-        if (window.ResizeObserver) {
-          const resizeObserver = new ResizeObserver(() => {
-            resizeCanvas();
-          });
-          resizeObserver.observe(container);
-        }
       });
 
       // Store animation reference
