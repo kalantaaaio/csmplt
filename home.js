@@ -1,6 +1,31 @@
 console.log("test");
 console.log("old version");
 
+// Add CSS styles for mobile canvas elements
+function addMobileCanvasStyles() {
+  if (!document.getElementById('mobile-canvas-styles')) {
+    const style = document.createElement('style');
+    style.id = 'mobile-canvas-styles';
+    style.textContent = `
+      @media screen and (max-width: 990px) {
+        .lottie-div canvas {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: contain;
+          display: block;
+        }
+        
+        .lottie-div {
+          width: 100%;
+          height: 100%;
+          position: relative;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
 // Lottie animations controller using lottie-web
 const lottieAnimations = new Map(); // Store animation instances
 
@@ -48,6 +73,9 @@ function discoverLottieElements() {
 function initLottieScrollAnimations() {
   console.log("Initializing custom Lottie scroll animations...");
 
+  // Add mobile canvas styles
+  addMobileCanvasStyles();
+
   // Check if lottie library is loaded
   if (typeof lottie === "undefined") {
     console.error("Lottie library not loaded yet, retrying in 1 second...");
@@ -75,15 +103,41 @@ function initLottieScrollAnimations() {
       "Cleared Webflow Lottie element, preparing for custom animation"
     );
 
-    // Create Lottie animation
+    // Create Lottie animation with conditional renderer
+    const isMobile = window.innerWidth < 991;
+    const renderer = isMobile ? "canvas" : "svg";
+    
     try {
       const animation = lottie.loadAnimation({
         container: container,
         path: lottieData.path,
-        renderer: "svg",
+        renderer: renderer,
         loop: true,
         autoplay: false,
       });
+      
+      // Apply mobile canvas styling if using canvas renderer
+      if (renderer === "canvas") {
+        // Use a timeout to ensure canvas is rendered
+        setTimeout(() => {
+          const canvasElement = container.querySelector("canvas");
+          if (canvasElement) {
+            canvasElement.style.width = "100%";
+            canvasElement.style.height = "100%";
+            canvasElement.style.objectFit = "contain";
+          }
+        }, 100);
+        
+        // Also listen for animation ready event
+        animation.addEventListener('DOMLoaded', () => {
+          const canvasElement = container.querySelector("canvas");
+          if (canvasElement) {
+            canvasElement.style.width = "100%";
+            canvasElement.style.height = "100%";
+            canvasElement.style.objectFit = "contain";
+          }
+        });
+      }
 
       // Store animation reference
       lottieAnimations.set(container, animation);
@@ -122,20 +176,10 @@ function setupIntersectionObserver(element) {
 
       if (entry.isIntersecting) {
         // Play animation logic
-        if (animation && !isMobile) {
-          // Desktop: play all animations
+        if (animation) {
+          // Play all animations on both desktop and mobile
           animation.play();
-          console.log("Playing Lottie animation on desktop");
-        } else if (animation && isMobile && isFirstLottieInHeroLetters) {
-          // Mobile: only play first animation in hero_letters
-          animation.play();
-          console.log(
-            "Playing first Lottie animation in hero_letters on mobile"
-          );
-        } else if (isMobile) {
-          console.log(
-            "Lottie animation disabled on mobile (not first in hero_letters)"
-          );
+          console.log("Playing Lottie animation");
         }
       } else {
         // Element left viewport - pause animation
