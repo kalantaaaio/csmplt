@@ -73,6 +73,22 @@ function initLottieScrollAnimations() {
         renderer: "canvas",
         loop: true,
         autoplay: false,
+        rendererSettings: {
+          preserveAspectRatio: "xMidYMid meet",
+          clearCanvas: true,
+          progressiveLoad: false,
+          hideOnTransparent: true
+        }
+      });
+
+      // Ensure canvas fills the container
+      animation.addEventListener('DOMLoaded', () => {
+        const canvas = container.querySelector('canvas');
+        if (canvas) {
+          canvas.style.width = '100%';
+          canvas.style.height = '100%';
+          canvas.style.display = 'block';
+        }
       });
 
       // Store animation reference
