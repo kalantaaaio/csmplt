@@ -13,6 +13,7 @@ function discoverLottieElements() {
   const elementsWithDataSrc = document.querySelectorAll('[data-src*=".json"]');
 
   elementsWithDataSrc.forEach((element) => {
+    element.classList.add("lottie-div");
     const dataSrc = element.getAttribute("data-src");
     const dataMobSrc = element.getAttribute("data-mob-src");
     const isInHeroLetters = element.closest(".hero_letters") !== null;
