@@ -1,4 +1,5 @@
 console.log("test");
+console.log("old version");
 
 // Lottie animations controller using lottie-web
 const lottieAnimations = new Map(); // Store animation instances
@@ -6,19 +7,37 @@ const lottieAnimations = new Map(); // Store animation instances
 // Auto-discover Lottie animations from data-src attributes
 function discoverLottieElements() {
   const lottieElements = [];
+  const isMobile = window.innerWidth < 991;
 
   // Find all elements with data-src attribute (Webflow Lottie elements)
   const elementsWithDataSrc = document.querySelectorAll('[data-src*=".json"]');
 
   elementsWithDataSrc.forEach((element) => {
     const dataSrc = element.getAttribute("data-src");
+    const dataMobSrc = element.getAttribute("data-mob-src");
+    const isInHeroLetters = element.closest(".hero_letters") !== null;
+
     if (dataSrc && dataSrc.includes(".json")) {
       // Load all Lottie elements regardless of device
+      // Use mobile version for hero_letters on mobile, otherwise use regular version
+      let animationPath = dataSrc;
+      if (
+        isMobile &&
+        isInHeroLetters &&
+        dataMobSrc &&
+        dataMobSrc.includes(".json")
+      ) {
+        animationPath = dataMobSrc;
+        console.log(`Using mobile version for hero_letters: ${dataMobSrc}`);
+      }
+
       lottieElements.push({
         element: element,
         path: dataSrc,
+        path: animationPath,
       });
       console.log(`Found Lottie element with path: ${dataSrc}`);
+      console.log(`Found Lottie element with path: ${animationPath}`);
     }
   });
 
@@ -92,14 +111,30 @@ function setupIntersectionObserver(element) {
     entries.forEach((entry) => {
       const animation = lottieAnimations.get(entry.target);
       const isMobile = window.innerWidth < 991;
+      const isInHeroLetters = entry.target.closest(".hero_letters") !== null;
+      const isFirstLottieInHeroLetters =
+        isInHeroLetters &&
+        entry.target ===
+          entry.target
+            .closest(".hero_letters")
+            .querySelector('[data-src*=".json"]');
 
       if (entry.isIntersecting) {
-        // Element entered viewport - play animation only on desktop
+        // Play animation logic
         if (animation && !isMobile) {
+          // Desktop: play all animations
           animation.play();
-          console.log("Playing Lottie animation");
+          console.log("Playing Lottie animation on desktop");
+        } else if (animation && isMobile && isFirstLottieInHeroLetters) {
+          // Mobile: only play first animation in hero_letters
+          animation.play();
+          console.log(
+            "Playing first Lottie animation in hero_letters on mobile"
+          );
         } else if (isMobile) {
-          console.log("Lottie animation disabled on mobile");
+          console.log(
+            "Lottie animation disabled on mobile (not first in hero_letters)"
+          );
         }
       } else {
         // Element left viewport - pause animation
@@ -125,7 +160,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Wait for fonts to load before initializing line animations
   document.fonts.ready.then(() => {
     lineAnims.forEach((lineAnim) => {
-      let splitText = new SplitText(lineAnim, { type: "lines", mask: "lines" });
+      let splitText = new SplitText(lineAnim, {
+        type: "lines, words",
+        mask: "lines",
+      });
       let lines = splitText.lines;
       gsap.set(lines, { y: "100%" });
       gsap.to(lines, {
