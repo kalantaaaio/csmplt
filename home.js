@@ -70,7 +70,7 @@ function initLottieScrollAnimations() {
       const animation = lottie.loadAnimation({
         container: container,
         path: lottieData.path,
-        renderer: "svg",
+        renderer: "canvas",
         loop: true,
         autoplay: false,
       });
