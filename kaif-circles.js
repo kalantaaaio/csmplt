@@ -43,11 +43,14 @@ document.addEventListener("DOMContentLoaded", () => {
       document.addEventListener("click", (e) => this.closeOnOutsideClick(e));
       document.addEventListener("keydown", (e) => this.closeOnEscape(e));
       
-      // Додаємо Intersection Observer для відстеження видимості
-      this.setupIntersectionObserver();
-      
-      // Додаємо відстеження видимості сторінки
-      this.setupVisibilityListener();
+      // Перевіряємо чи це мобільний пристрій
+      if (!this.isMobile()) {
+        // Додаємо Intersection Observer для відстеження видимості тільки на десктопі
+        this.setupIntersectionObserver();
+        
+        // Додаємо відстеження видимості сторінки
+        this.setupVisibilityListener();
+      }
     }
     updateContainerSize() {
       this.containerRect = this.container.getBoundingClientRect();
@@ -411,19 +414,16 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
     
+    isMobile() {
+      const userAgent = navigator.userAgent.toLowerCase();
+      return /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    }
+    
     getOptimalFPS() {
       // Адаптивна частота кадрів залежно від можливостей пристрою
-      const userAgent = navigator.userAgent.toLowerCase();
-      const isMobile = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-      
-      // На мобільних пристроях зменшуємо частоту кадрів
-      if (isMobile) {
-        return 2; // Кожен 2-й кадр (30fps замість 60fps)
-      }
-      
       // Перевіряємо доступність API для визначення потужності
       if ('hardwareConcurrency' in navigator && navigator.hardwareConcurrency < 4) {
-        return 2; // На слабких пристроях теж зменшуємо
+        return 2; // На слабких пристроях зменшуємо
       }
       
       return 1; // На потужних пристроях - всі кадри
