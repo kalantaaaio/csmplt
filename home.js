@@ -160,7 +160,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Wait for fonts to load before initializing line animations
   document.fonts.ready.then(() => {
     lineAnims.forEach((lineAnim) => {
-      let splitText = new SplitText(lineAnim, { type: "lines", mask: "lines" });
+      let splitText = new SplitText(lineAnim, {
+        type: "lines, words",
+        mask: "lines",
+      });
       let lines = splitText.lines;
       gsap.set(lines, { y: "100%" });
       gsap.to(lines, {
