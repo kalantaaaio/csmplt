@@ -1,4 +1,5 @@
 console.log("test");
+console.log("old version");
 
 // Lottie animations controller using lottie-web
 const lottieAnimations = new Map(); // Store animation instances
