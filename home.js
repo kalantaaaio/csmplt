@@ -79,26 +79,49 @@ function initLottieScrollAnimations() {
         loop: true,
         autoplay: false,
         rendererSettings: {
-          scaleMode: "noScale", // замість preserveAspectRatio
+          preserveAspectRatio: "xMidYMid slice",
           clearCanvas: true,
           progressiveLoad: false,
           hideOnTransparent: true,
+          viewBoxOnly: true,
         },
       });
 
-      animation.addEventListener("DOMLoaded", () => {
+      // Функція для правильного розміру canvas
+      const resizeCanvas = () => {
         const canvas = container.querySelector("canvas");
         if (canvas) {
-          // Встановити розміри canvas відповідно до контейнера
           const rect = container.getBoundingClientRect();
-          canvas.width = rect.width * window.devicePixelRatio;
-          canvas.height = rect.height * window.devicePixelRatio;
-          canvas.style.width = "100%";
-          canvas.style.height = "100%";
+          const dpr = window.devicePixelRatio || 1;
+          
+          // Встановити внутрішні розміри canvas
+          canvas.width = rect.width * dpr;
+          canvas.height = rect.height * dpr;
+          
+          // Встановити CSS розміри
+          canvas.style.width = rect.width + "px";
+          canvas.style.height = rect.height + "px";
           canvas.style.display = "block";
-
+          
+          // Масштабувати контекст для високої щільності пікселів
+          const ctx = canvas.getContext("2d");
+          ctx.scale(dpr, dpr);
+          
           // Перерендерити анімацію
           animation.resize();
+          console.log(`Canvas resized: ${rect.width}x${rect.height}`);
+        }
+      };
+
+      animation.addEventListener("DOMLoaded", () => {
+        resizeCanvas();
+        
+        // ResizeObserver для автоматичного ресайзу
+        if (window.ResizeObserver) {
+          const resizeObserver = new ResizeObserver(() => {
+            resizeCanvas();
+          });
+          resizeObserver.observe(container);
         }
       });
 
