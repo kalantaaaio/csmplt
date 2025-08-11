@@ -14,16 +14,21 @@ function discoverLottieElements() {
   elementsWithDataSrc.forEach((element) => {
     const dataSrc = element.getAttribute("data-src");
     const dataMobSrc = element.getAttribute("data-mob-src");
-    const isInHeroLetters = element.closest('.hero_letters') !== null;
-    
+    const isInHeroLetters = element.closest(".hero_letters") !== null;
+
     if (dataSrc && dataSrc.includes(".json")) {
       // Use mobile version for hero_letters on mobile, otherwise use regular version
       let animationPath = dataSrc;
-      if (isMobile && isInHeroLetters && dataMobSrc && dataMobSrc.includes(".json")) {
+      if (
+        isMobile &&
+        isInHeroLetters &&
+        dataMobSrc &&
+        dataMobSrc.includes(".json")
+      ) {
         animationPath = dataMobSrc;
         console.log(`Using mobile version for hero_letters: ${dataMobSrc}`);
       }
-      
+
       lottieElements.push({
         element: element,
         path: animationPath,
@@ -74,20 +79,26 @@ function initLottieScrollAnimations() {
         loop: true,
         autoplay: false,
         rendererSettings: {
-          preserveAspectRatio: "xMidYMid meet",
+          scaleMode: "noScale", // замість preserveAspectRatio
           clearCanvas: true,
           progressiveLoad: false,
-          hideOnTransparent: true
-        }
+          hideOnTransparent: true,
+        },
       });
 
-      // Ensure canvas fills the container
-      animation.addEventListener('DOMLoaded', () => {
-        const canvas = container.querySelector('canvas');
+      animation.addEventListener("DOMLoaded", () => {
+        const canvas = container.querySelector("canvas");
         if (canvas) {
-          canvas.style.width = '100%';
-          canvas.style.height = '100%';
-          canvas.style.display = 'block';
+          // Встановити розміри canvas відповідно до контейнера
+          const rect = container.getBoundingClientRect();
+          canvas.width = rect.width * window.devicePixelRatio;
+          canvas.height = rect.height * window.devicePixelRatio;
+          canvas.style.width = "100%";
+          canvas.style.height = "100%";
+          canvas.style.display = "block";
+
+          // Перерендерити анімацію
+          animation.resize();
         }
       });
 
@@ -118,9 +129,13 @@ function setupIntersectionObserver(element) {
     entries.forEach((entry) => {
       const animation = lottieAnimations.get(entry.target);
       const isMobile = window.innerWidth < 991;
-      const isInHeroLetters = entry.target.closest('.hero_letters') !== null;
-      const isFirstLottieInHeroLetters = isInHeroLetters && 
-        entry.target === entry.target.closest('.hero_letters').querySelector('[data-src*=".json"]');
+      const isInHeroLetters = entry.target.closest(".hero_letters") !== null;
+      const isFirstLottieInHeroLetters =
+        isInHeroLetters &&
+        entry.target ===
+          entry.target
+            .closest(".hero_letters")
+            .querySelector('[data-src*=".json"]');
 
       if (entry.isIntersecting) {
         // Play animation logic
@@ -131,9 +146,13 @@ function setupIntersectionObserver(element) {
         } else if (animation && isMobile && isFirstLottieInHeroLetters) {
           // Mobile: only play first animation in hero_letters
           animation.play();
-          console.log("Playing first Lottie animation in hero_letters on mobile");
+          console.log(
+            "Playing first Lottie animation in hero_letters on mobile"
+          );
         } else if (isMobile) {
-          console.log("Lottie animation disabled on mobile (not first in hero_letters)");
+          console.log(
+            "Lottie animation disabled on mobile (not first in hero_letters)"
+          );
         }
       } else {
         // Element left viewport - pause animation
