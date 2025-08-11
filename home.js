@@ -6,19 +6,29 @@ const lottieAnimations = new Map(); // Store animation instances
 // Auto-discover Lottie animations from data-src attributes
 function discoverLottieElements() {
   const lottieElements = [];
+  const isMobile = window.innerWidth < 991;
 
   // Find all elements with data-src attribute (Webflow Lottie elements)
   const elementsWithDataSrc = document.querySelectorAll('[data-src*=".json"]');
 
   elementsWithDataSrc.forEach((element) => {
     const dataSrc = element.getAttribute("data-src");
+    const dataMobSrc = element.getAttribute("data-mob-src");
+    const isInHeroLetters = element.closest('.hero_letters') !== null;
+    
     if (dataSrc && dataSrc.includes(".json")) {
-      // Load all Lottie elements regardless of device
+      // Use mobile version for hero_letters on mobile, otherwise use regular version
+      let animationPath = dataSrc;
+      if (isMobile && isInHeroLetters && dataMobSrc && dataMobSrc.includes(".json")) {
+        animationPath = dataMobSrc;
+        console.log(`Using mobile version for hero_letters: ${dataMobSrc}`);
+      }
+      
       lottieElements.push({
         element: element,
-        path: dataSrc,
+        path: animationPath,
       });
-      console.log(`Found Lottie element with path: ${dataSrc}`);
+      console.log(`Found Lottie element with path: ${animationPath}`);
     }
   });
 
