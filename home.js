@@ -198,53 +198,51 @@ function setupIntersectionObserver(element) {
 
 document.addEventListener("DOMContentLoaded", initLottieScrollAnimations);
 
-document.addEventListener("DOMContentLoaded", () => {
-  const lineAnims = document.querySelectorAll(".line-anim");
-  const scrubAnims = document.querySelectorAll(".scrub-anim");
+const lineAnims = document.querySelectorAll(".line-anim");
+const scrubAnims = document.querySelectorAll(".scrub-anim");
 
-  // Wait for fonts to load before initializing line animations
-  document.fonts.ready.then(() => {
-    lineAnims.forEach((lineAnim) => {
-      SplitText.create(lineAnim, {
-        type: "lines",
-        mask: "lines",
-        linesClass: "line",
-        autoSplit: true,
-        onSplit(self) {
-          gsap.set(self.lines, { y: "100%" });
-          return gsap.to(self.lines, {
-            y: "0%",
-            duration: 1,
-            ease: "power4.out",
-            stagger: 0.1,
+// Wait for fonts to load before initializing line animations
+document.fonts.ready.then(() => {
+  lineAnims.forEach((lineAnim) => {
+    SplitText.create(lineAnim, {
+      type: "lines",
+      mask: "lines",
+      linesClass: "line",
+      autoSplit: true,
+      onSplit(self) {
+        gsap.set(self.lines, { y: "100%" });
+        return gsap.to(self.lines, {
+          y: "0%",
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.1,
 
-            scrollTrigger: {
-              trigger: lineAnim,
-              start: "top 90%",
-              toggleActions: "play none none reverse",
-            },
-          });
-        },
-      });
+          scrollTrigger: {
+            trigger: lineAnim,
+            start: "top 90%",
+            toggleActions: "play none none reverse",
+          },
+        });
+      },
     });
   });
-  scrubAnims.forEach((scrubAnim) => {
-    let splitText = new SplitText(scrubAnim, { type: "words" });
-    let words = splitText.words;
-    gsap.set(words, { opacity: 0.2 });
-    gsap.to(words, {
-      opacity: 1,
-      duration: 0.2,
-      ease: "power1.out",
-      stagger: {
-        each: 0.4,
-      },
-      scrollTrigger: {
-        trigger: scrubAnim,
-        start: "top 90%",
-        end: "top center",
-        scrub: true,
-      },
-    });
+});
+scrubAnims.forEach((scrubAnim) => {
+  let splitText = new SplitText(scrubAnim, { type: "words" });
+  let words = splitText.words;
+  gsap.set(words, { opacity: 0.2 });
+  gsap.to(words, {
+    opacity: 1,
+    duration: 0.2,
+    ease: "power1.out",
+    stagger: {
+      each: 0.4,
+    },
+    scrollTrigger: {
+      trigger: scrubAnim,
+      start: "top 90%",
+      end: "top center",
+      scrub: true,
+    },
   });
 });
