@@ -205,27 +205,24 @@ document.addEventListener("DOMContentLoaded", () => {
   // Wait for fonts to load before initializing line animations
   document.fonts.ready.then(() => {
     lineAnims.forEach((lineAnim) => {
-      let splitText = new SplitText(lineAnim, {
+      SplitText.create(lineAnim, {
         type: "lines, words",
         mask: "lines",
-      });
-      let lines = splitText.lines;
-      gsap.set(lines, { y: "100%" });
-      gsap.to(lines, {
-        y: `0%`,
-        duration: 1,
-        ease: "power4.out",
-        stagger: {
-          each: 0.1,
-          // onComplete: () => {
-          //   splitText.revert();
-          // },
-        },
-        scrollTrigger: {
-          trigger: lineAnim,
-          start: "top 90%",
-          toggleActions: "play none none reverse",
-        },
+        autoSplit: true,
+        onSplit(self) {
+          gsap.set(self.lines, { y: "100%" });
+          return gsap.to(self.lines, {
+            y: "0%",
+            duration: 1,
+            ease: "power4.out",
+            stagger: 0.1,
+            scrollTrigger: {
+              trigger: lineAnim,
+              start: "top 90%",
+              toggleActions: "play none none reverse",
+            },
+          });
+        }
       });
     });
   });
