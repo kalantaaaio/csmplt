@@ -1,11 +1,11 @@
 console.log("test");
-console.log("old version");
+console.log("old version2");
 
 // Add CSS styles for mobile canvas elements
 function addMobileCanvasStyles() {
-  if (!document.getElementById('mobile-canvas-styles')) {
-    const style = document.createElement('style');
-    style.id = 'mobile-canvas-styles';
+  if (!document.getElementById("mobile-canvas-styles")) {
+    const style = document.createElement("style");
+    style.id = "mobile-canvas-styles";
     style.textContent = `
       @media screen and (max-width: 990px) {
         .lottie-div canvas {
@@ -106,7 +106,7 @@ function initLottieScrollAnimations() {
     // Create Lottie animation with conditional renderer
     const isMobile = window.innerWidth < 991;
     const renderer = isMobile ? "canvas" : "svg";
-    
+
     try {
       const animation = lottie.loadAnimation({
         container: container,
@@ -115,7 +115,7 @@ function initLottieScrollAnimations() {
         loop: true,
         autoplay: false,
       });
-      
+
       // Apply mobile canvas styling if using canvas renderer
       if (renderer === "canvas") {
         // Use a timeout to ensure canvas is rendered
@@ -127,9 +127,9 @@ function initLottieScrollAnimations() {
             canvasElement.style.objectFit = "contain";
           }
         }, 100);
-        
+
         // Also listen for animation ready event
-        animation.addEventListener('DOMLoaded', () => {
+        animation.addEventListener("DOMLoaded", () => {
           const canvasElement = container.querySelector("canvas");
           if (canvasElement) {
             canvasElement.style.width = "100%";
