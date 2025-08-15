@@ -208,6 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
       SplitText.create(lineAnim, {
         type: "lines, words",
         mask: "lines",
+        linesClass: "line",
         autoSplit: true,
         onSplit(self) {
           gsap.set(self.lines, { y: "100%" });
@@ -222,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
               toggleActions: "play none none reverse",
             },
           });
-        }
+        },
       });
     });
   });
