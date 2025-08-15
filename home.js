@@ -227,22 +227,24 @@ document.fonts.ready.then(() => {
     });
   });
 });
-scrubAnims.forEach((scrubAnim) => {
-  let splitText = new SplitText(scrubAnim, { type: "words" });
-  let words = splitText.words;
-  gsap.set(words, { opacity: 0.2 });
-  gsap.to(words, {
-    opacity: 1,
-    duration: 0.2,
-    ease: "power1.out",
-    stagger: {
-      each: 0.4,
-    },
-    scrollTrigger: {
-      trigger: scrubAnim,
-      start: "top 90%",
-      end: "top center",
-      scrub: true,
-    },
+document.fonts.ready.then(() => {
+  scrubAnims.forEach((scrubAnim) => {
+    let splitText = new SplitText(scrubAnim, { type: "words" });
+    let words = splitText.words;
+    gsap.set(words, { opacity: 0.2 });
+    gsap.to(words, {
+      opacity: 1,
+      duration: 0.2,
+      ease: "power1.out",
+      stagger: {
+        each: 0.4,
+      },
+      scrollTrigger: {
+        trigger: scrubAnim,
+        start: "top 90%",
+        end: "top center",
+        scrub: true,
+      },
+    });
   });
 });
