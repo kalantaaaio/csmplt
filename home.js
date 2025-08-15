@@ -206,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.fonts.ready.then(() => {
     lineAnims.forEach((lineAnim) => {
       SplitText.create(lineAnim, {
-        type: "lines, words",
+        type: "lines",
         mask: "lines",
         linesClass: "line",
         autoSplit: true,
@@ -217,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
             duration: 1,
             ease: "power4.out",
             stagger: 0.1,
+
             scrollTrigger: {
               trigger: lineAnim,
               start: "top 90%",
