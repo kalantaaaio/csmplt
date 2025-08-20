@@ -25,7 +25,7 @@ function addMobileCanvasStyles() {
     document.head.appendChild(style);
   }
 }
-
+//old
 // Lottie animations controller using lottie-web
 const lottieAnimations = new Map(); // Store animation instances
 
