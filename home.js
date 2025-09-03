@@ -20,7 +20,7 @@ function discoverLottieElements() {
   return lottieElements;
 }
 
-function initLottieScrollAnimations() {
+async function initLottieScrollAnimations() {
   console.log("Initializing universal Lottie animations...");
 
   if (typeof lottie === "undefined") {
@@ -30,7 +30,7 @@ function initLottieScrollAnimations() {
 
   const discoveredLotties = discoverLottieElements();
 
-  discoveredLotties.forEach((lottieData) => {
+  for (const lottieData of discoveredLotties) {
     const container = lottieData.element;
 
     container.innerHTML = "";
@@ -41,12 +41,17 @@ function initLottieScrollAnimations() {
     container.removeAttribute("data-bounding");
 
     try {
-      const animation = lottie.loadAnimation({
-        container: container,
-        path: lottieData.path,
-        renderer: "svg",
-        loop: true,
-        autoplay: false,
+      const animation = await new Promise((resolve, reject) => {
+        const anim = lottie.loadAnimation({
+          container: container,
+          path: lottieData.path,
+          renderer: "svg",
+          loop: true,
+          autoplay: false,
+        });
+
+        anim.addEventListener('DOMLoaded', () => resolve(anim));
+        anim.addEventListener('error', reject);
       });
 
       lottieAnimations.set(container, animation);
@@ -56,7 +61,7 @@ function initLottieScrollAnimations() {
     } catch (error) {
       console.error(`Error loading Lottie animation: ${error}`);
     }
-  });
+  }
 }
 
 function setupIntersectionObserver(element) {
