@@ -44,7 +44,7 @@ function initLottieScrollAnimations() {
       const animation = lottie.loadAnimation({
         container: container,
         path: lottieData.path,
-        renderer: "svg",
+        renderer: "canvas",
         loop: true,
         autoplay: false,
       });
@@ -60,25 +60,28 @@ function initLottieScrollAnimations() {
 }
 
 function setupIntersectionObserver(element) {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      const animation = lottieAnimations.get(entry.target);
-      
-      if (animation) {
-        if (entry.isIntersecting) {
-          animation.play();
-          console.log("Playing Lottie animation");
-        } else {
-          animation.pause();
-          console.log("Pausing Lottie animation");
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const animation = lottieAnimations.get(entry.target);
+
+        if (animation) {
+          if (entry.isIntersecting) {
+            animation.play();
+            console.log("Playing Lottie animation");
+          } else {
+            animation.pause();
+            console.log("Pausing Lottie animation");
+          }
         }
-      }
-    });
-  }, {
-    root: null,
-    rootMargin: "50px",
-    threshold: 0.1,
-  });
+      });
+    },
+    {
+      root: null,
+      rootMargin: "50px",
+      threshold: 0.1,
+    }
+  );
 
   observer.observe(element);
 }
