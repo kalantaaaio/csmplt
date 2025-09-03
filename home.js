@@ -1,45 +1,19 @@
-console.log("test");
-console.log("old version2");
+const lottieAnimations = new Map();
 
-//old
-// Lottie animations controller using lottie-web
-const lottieAnimations = new Map(); // Store animation instances
-
-// Auto-discover Lottie animations from data-src attributes
 function discoverLottieElements() {
   const lottieElements = [];
-  const isMobile = window.innerWidth < 991;
-
-  // Find all elements with data-src attribute (Webflow Lottie elements)
   const elementsWithDataSrc = document.querySelectorAll('[data-src*=".json"]');
 
   elementsWithDataSrc.forEach((element) => {
     element.classList.add("lottie-div");
     const dataSrc = element.getAttribute("data-src");
-    const dataMobSrc = element.getAttribute("data-mob-src");
-    const isInHeroLetters = element.closest(".hero_letters") !== null;
 
     if (dataSrc && dataSrc.includes(".json")) {
-      // Load all Lottie elements regardless of device
-      // Use mobile version for hero_letters on mobile, otherwise use regular version
-      let animationPath = dataSrc;
-      if (
-        isMobile &&
-        isInHeroLetters &&
-        dataMobSrc &&
-        dataMobSrc.includes(".json")
-      ) {
-        animationPath = dataMobSrc;
-        console.log(`Using mobile version for hero_letters: ${dataMobSrc}`);
-      }
-
       lottieElements.push({
         element: element,
         path: dataSrc,
-        path: animationPath,
       });
       console.log(`Found Lottie element with path: ${dataSrc}`);
-      console.log(`Found Lottie element with path: ${animationPath}`);
     }
   });
 
@@ -47,25 +21,18 @@ function discoverLottieElements() {
 }
 
 function initLottieScrollAnimations() {
-  console.log("Initializing custom Lottie scroll animations...");
+  console.log("Initializing universal Lottie animations...");
 
-
-  // Check if lottie library is loaded
   if (typeof lottie === "undefined") {
-    console.error("Lottie library not loaded yet, retrying in 1 second...");
-    //setTimeout(initLottieScrollAnimations, 1000);
+    console.error("Lottie library not loaded yet");
     return;
   }
 
-  console.log("Starting auto-discovery of Lottie animations...");
-
-  // Auto-discover and initialize Lottie animations
   const discoveredLotties = discoverLottieElements();
 
   discoveredLotties.forEach((lottieData) => {
     const container = lottieData.element;
 
-    // Clear container content but preserve attributes except Webflow-specific ones
     container.innerHTML = "";
     container.removeAttribute("data-animation-type");
     container.removeAttribute("data-autoplay");
@@ -73,71 +40,48 @@ function initLottieScrollAnimations() {
     container.removeAttribute("data-direction");
     container.removeAttribute("data-bounding");
 
-    console.log(
-      "Cleared Webflow Lottie element, preparing for custom animation"
-    );
-
-    // Create Lottie animation with SVG renderer for all breakpoints
-    const renderer = "svg";
-
     try {
       const animation = lottie.loadAnimation({
         container: container,
         path: lottieData.path,
-        renderer: renderer,
+        renderer: "svg",
         loop: true,
         autoplay: false,
       });
 
-
-      // Store animation reference
       lottieAnimations.set(container, animation);
+      console.log(`Lottie animation loaded: ${lottieData.path}`);
 
-      console.log(`Lottie animation loaded from data-src: ${lottieData.path}`);
-
-      // Set up intersection observer for this element
       setupIntersectionObserver(container);
     } catch (error) {
-      console.error(
-        `Error loading Lottie animation from ${lottieData.path}:`,
-        error
-      );
+      console.error(`Error loading Lottie animation: ${error}`);
     }
   });
 }
 
 function setupIntersectionObserver(element) {
-  const observerOptions = {
-    root: null,
-    rootMargin: "50px",
-    threshold: 0.1,
-  };
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       const animation = lottieAnimations.get(entry.target);
-
-      if (entry.isIntersecting) {
-        // Play animation logic
-        if (animation) {
-          // Play all animations on both desktop and mobile
+      
+      if (animation) {
+        if (entry.isIntersecting) {
           animation.play();
           console.log("Playing Lottie animation");
-        }
-      } else {
-        // Element left viewport - pause animation
-        if (animation) {
+        } else {
           animation.pause();
           console.log("Pausing Lottie animation");
         }
       }
     });
-  }, observerOptions);
-  //sads
+  }, {
+    root: null,
+    rootMargin: "50px",
+    threshold: 0.1,
+  });
+
   observer.observe(element);
 }
-
-// Initialize when DOM is ready
 
 document.addEventListener("DOMContentLoaded", initLottieScrollAnimations);
 
