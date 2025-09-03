@@ -2,8 +2,9 @@ const lottieAnimations = new Map();
 
 function discoverLottieElements() {
   const lottieElements = [];
+  
+  // Find Webflow Lottie elements
   const elementsWithDataSrc = document.querySelectorAll('[data-src*=".json"]');
-
   elementsWithDataSrc.forEach((element) => {
     element.classList.add("lottie-div");
     const dataSrc = element.getAttribute("data-src");
@@ -13,7 +14,22 @@ function discoverLottieElements() {
         element: element,
         path: dataSrc,
       });
-      console.log(`Found Lottie element with path: ${dataSrc}`);
+      console.log(`Found Webflow Lottie element with path: ${dataSrc}`);
+    }
+  });
+
+  // Find custom data-lottie-src elements
+  const elementsWithLottieSrc = document.querySelectorAll('[data-lottie-src]');
+  elementsWithLottieSrc.forEach((element) => {
+    element.classList.add("lottie-div");
+    const lottieSrc = element.getAttribute("data-lottie-src");
+
+    if (lottieSrc) {
+      lottieElements.push({
+        element: element,
+        path: lottieSrc,
+      });
+      console.log(`Found custom Lottie element with path: ${lottieSrc}`);
     }
   });
 
