@@ -50,8 +50,8 @@ async function initLottieScrollAnimations() {
           autoplay: false,
         });
 
-        anim.addEventListener('DOMLoaded', () => resolve(anim));
-        anim.addEventListener('error', reject);
+        anim.addEventListener("DOMLoaded", () => resolve(anim));
+        anim.addEventListener("error", reject);
       });
 
       lottieAnimations.set(container, animation);
@@ -97,31 +97,32 @@ const lineAnims = document.querySelectorAll(".line-anim");
 const scrubAnims = document.querySelectorAll(".scrub-anim");
 
 // Wait for fonts to load before initializing line animations
-document.fonts.ready.then(() => {
-  lineAnims.forEach((lineAnim) => {
-    SplitText.create(lineAnim, {
-      type: "lines",
-      mask: "lines",
-      linesClass: "line",
-      autoSplit: true,
-      onSplit(self) {
-        gsap.set(self.lines, { y: "100%" });
-        return gsap.to(self.lines, {
-          y: "0%",
-          duration: 1,
-          ease: "power4.out",
-          stagger: 0.1,
-
-          scrollTrigger: {
-            trigger: lineAnim,
-            start: "top 90%",
-            toggleActions: "play none none reverse",
-          },
-        });
-      },
+window.onload = function () {
+  setTimeout(() => {
+    lineAnims.forEach((lineAnim) => {
+      SplitText.create(lineAnim, {
+        type: "lines",
+        mask: "lines",
+        linesClass: "line",
+        autoSplit: true,
+        onSplit(self) {
+          gsap.set(self.lines, { y: "100%" });
+          return gsap.to(self.lines, {
+            y: "0%",
+            duration: 1,
+            ease: "power4.out",
+            stagger: 0.1,
+            scrollTrigger: {
+              trigger: lineAnim,
+              start: "top 90%",
+              toggleActions: "play none none reverse",
+            },
+          });
+        },
+      });
     });
-  });
-});
+  }, 100);
+};
 document.fonts.ready.then(() => {
   scrubAnims.forEach((scrubAnim) => {
     let splitText = new SplitText(scrubAnim, { type: "words" });
