@@ -97,32 +97,37 @@ const lineAnims = document.querySelectorAll(".line-anim");
 const scrubAnims = document.querySelectorAll(".scrub-anim");
 
 // Wait for fonts to load before initializing line animations
-window.onload = function () {
-  setTimeout(() => {
-    lineAnims.forEach((lineAnim) => {
-      SplitText.create(lineAnim, {
-        type: "lines",
-        mask: "lines",
-        linesClass: "line",
-        autoSplit: true,
-        onSplit(self) {
-          gsap.set(self.lines, { y: "100%" });
-          return gsap.to(self.lines, {
-            y: "0%",
-            duration: 1,
-            ease: "power4.out",
-            stagger: 0.1,
-            scrollTrigger: {
-              trigger: lineAnim,
-              start: "top 90%",
-              toggleActions: "play none none reverse",
-            },
-          });
-        },
-      });
+document.fonts.ready.then((fontFaceSet) => {
+  // Any operation that needs to be done only after all used fonts
+  // have finished loading can go here.
+  const fontFaces = [...fontFaceSet];
+  console.log(fontFaces);
+  // some fonts may still be unloaded if they aren't used on the site
+  console.log(fontFaces.map((f) => f.status));
+  
+  lineAnims.forEach((lineAnim) => {
+    SplitText.create(lineAnim, {
+      type: "lines",
+      mask: "lines",
+      linesClass: "line",
+      autoSplit: true,
+      onSplit(self) {
+        gsap.set(self.lines, { y: "100%" });
+        return gsap.to(self.lines, {
+          y: "0%",
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: lineAnim,
+            start: "top 90%",
+            toggleActions: "play none none reverse",
+          },
+        });
+      },
     });
-  }, 100);
-};
+  });
+});
 document.fonts.ready.then(() => {
   scrubAnims.forEach((scrubAnim) => {
     let splitText = new SplitText(scrubAnim, { type: "words" });
