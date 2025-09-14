@@ -104,10 +104,12 @@ window.onload = function () {
     setTimeout(() => {
       lineAnims.forEach((lineAnim) => {
         SplitText.create(lineAnim, {
-          type: "lines",
+          type: "lines,words",
           mask: "lines",
           linesClass: "line",
+          wordsClass: "word",
           autoSplit: true,
+          reduceWhiteSpace: false,
           onSplit(self) {
             gsap.set(self.lines, { y: "100%" });
             return gsap.to(self.lines, {
