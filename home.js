@@ -101,32 +101,30 @@ const scrubAnims = document.querySelectorAll(".scrub-anim");
 window.onload = function () {
   // Wait for both DOM and fonts to be ready
   document.fonts.ready.then(() => {
-    setTimeout(() => {
-      lineAnims.forEach((lineAnim) => {
-        SplitText.create(lineAnim, {
-          type: "lines,words",
-          mask: "lines",
-          linesClass: "line",
-          wordsClass: "word",
-          autoSplit: true,
-          reduceWhiteSpace: false,
-          onSplit(self) {
-            gsap.set(self.lines, { y: "100%" });
-            return gsap.to(self.lines, {
-              y: "0%",
-              duration: 1,
-              ease: "power4.out",
-              stagger: 0.1,
-              scrollTrigger: {
-                trigger: lineAnim,
-                start: "top 90%",
-                toggleActions: "play none none reverse",
-              },
-            });
-          },
-        });
+    lineAnims.forEach((lineAnim) => {
+      SplitText.create(lineAnim, {
+        type: "lines,words",
+        mask: "lines",
+        linesClass: "line",
+        wordsClass: "word",
+        autoSplit: true,
+        reduceWhiteSpace: false,
+        onSplit(self) {
+          gsap.set(self.lines, { y: "100%" });
+          return gsap.to(self.lines, {
+            y: "0%",
+            duration: 1,
+            ease: "power4.out",
+            stagger: 0.1,
+            scrollTrigger: {
+              trigger: lineAnim,
+              start: "top 90%",
+              toggleActions: "play none none reverse",
+            },
+          });
+        },
       });
-    }, 500);
+    });
   });
 };
 
