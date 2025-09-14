@@ -204,15 +204,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+//works with bug
+
 // Wait for fonts to load before initializing line animations
-window.onload = function () {
-  setTimeout(() => {
+async function initLineAnimations() {
+  try {
+    const fontFaceSet = await document.fonts.ready;
+
+    const fontFaces = [...fontFaceSet];
+    console.log(fontFaces);
+    console.log(fontFaces.map((f) => f.status));
+
     lineAnims.forEach((lineAnim) => {
       SplitText.create(lineAnim, {
-        type: "lines",
+        type: "lines, words",
         mask: "lines",
         linesClass: "line",
-        autoSplit: true,
+        autoSplit: false,
         onSplit(self) {
           gsap.set(self.lines, { y: "100%" });
           return gsap.to(self.lines, {
@@ -229,5 +238,9 @@ window.onload = function () {
         },
       });
     });
-  }, 100);
-};
+  } catch (error) {
+    console.error("Error loading fonts:", error);
+  }
+}
+
+initLineAnimations();

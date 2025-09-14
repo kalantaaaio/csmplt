@@ -93,24 +93,19 @@ function setupIntersectionObserver(element) {
 
 document.addEventListener("DOMContentLoaded", initLottieScrollAnimations);
 
+document.addEventListener("DOMContentLoaded", () => {});
 const lineAnims = document.querySelectorAll(".line-anim");
 const scrubAnims = document.querySelectorAll(".scrub-anim");
 
 // Wait for fonts to load before initializing line animations
-async function initLineAnimations() {
-  try {
-    const fontFaceSet = await document.fonts.ready;
-
-    const fontFaces = [...fontFaceSet];
-    console.log(fontFaces);
-    console.log(fontFaces.map((f) => f.status));
-
+window.onload = function () {
+  setTimeout(() => {
     lineAnims.forEach((lineAnim) => {
       SplitText.create(lineAnim, {
-        type: "lines, words",
+        type: "lines",
         mask: "lines",
         linesClass: "line",
-        autoSplit: false,
+        autoSplit: true,
         onSplit(self) {
           gsap.set(self.lines, { y: "100%" });
           return gsap.to(self.lines, {
@@ -127,12 +122,8 @@ async function initLineAnimations() {
         },
       });
     });
-  } catch (error) {
-    console.error("Error loading fonts:", error);
-  }
-}
-
-initLineAnimations();
+  }, 500);
+};
 
 document.fonts.ready.then(() => {
   scrubAnims.forEach((scrubAnim) => {
