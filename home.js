@@ -100,19 +100,17 @@ const scrubAnims = document.querySelectorAll(".scrub-anim");
 async function initLineAnimations() {
   try {
     const fontFaceSet = await document.fonts.ready;
-    // Any operation that needs to be done only after all used fonts
-    // have finished loading can go here.
+
     const fontFaces = [...fontFaceSet];
     console.log(fontFaces);
-    // some fonts may still be unloaded if they aren't used on the site
     console.log(fontFaces.map((f) => f.status));
-    
+
     lineAnims.forEach((lineAnim) => {
       SplitText.create(lineAnim, {
-        type: "lines",
+        type: "lines, words",
         mask: "lines",
         linesClass: "line",
-        autoSplit: true,
+        autoSplit: false,
         onSplit(self) {
           gsap.set(self.lines, { y: "100%" });
           return gsap.to(self.lines, {
@@ -130,11 +128,12 @@ async function initLineAnimations() {
       });
     });
   } catch (error) {
-    console.error('Error loading fonts:', error);
+    console.error("Error loading fonts:", error);
   }
 }
 
 initLineAnimations();
+
 document.fonts.ready.then(() => {
   scrubAnims.forEach((scrubAnim) => {
     let splitText = new SplitText(scrubAnim, { type: "words" });
