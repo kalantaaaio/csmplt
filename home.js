@@ -3,17 +3,31 @@ const lottieAnimations = new Map();
 function discoverLottieElements() {
   const lottieElements = [];
   const elementsWithDataSrc = document.querySelectorAll('[data-src*=".json"]');
+  const isMobile = window.innerWidth < 480;
 
   elementsWithDataSrc.forEach((element) => {
     element.classList.add("lottie-div");
     const dataSrc = element.getAttribute("data-src");
+    const hasLottiePc = element.classList.contains("lottie-pc");
+    const hasLottieMob = element.classList.contains("lottie-mob");
 
     if (dataSrc && dataSrc.includes(".json")) {
-      lottieElements.push({
-        element: element,
-        path: dataSrc,
-      });
-      console.log(`Found Webflow Lottie element with path: ${dataSrc}`);
+      // On mobile (< 480px), only include lottie-mob elements
+      if (isMobile && hasLottieMob) {
+        lottieElements.push({
+          element: element,
+          path: dataSrc,
+        });
+        console.log(`Found mobile Lottie element with path: ${dataSrc}`);
+      }
+      // On desktop (>= 480px), include lottie-pc elements or elements without specific class
+      else if (!isMobile && (hasLottiePc || (!hasLottiePc && !hasLottieMob))) {
+        lottieElements.push({
+          element: element,
+          path: dataSrc,
+        });
+        console.log(`Found desktop Lottie element with path: ${dataSrc}`);
+      }
     }
   });
 
