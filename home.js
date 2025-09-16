@@ -18,111 +18,75 @@ function createLottieWithObserver(containerId, desktopPath, mobilePath) {
     autoplay: false,
   });
 
-  let debounceTimer = null;
   let isInView = false;
 
-  // Debounce функція для запобігання частих викликів
-  function debounce(func, wait) {
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(debounceTimer);
-        func(...args);
-      };
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(later, wait);
-    };
-  }
-
-  // Функція для перевірки видимості елемента
-  function checkVisibility() {
-    if (!container || !animation) return;
-
+  // Проста функція перевірки видимості
+  function isElementInViewport() {
     const rect = container.getBoundingClientRect();
-    const windowHeight =
-      window.innerHeight || document.documentElement.clientHeight;
-    const windowWidth =
-      window.innerWidth || document.documentElement.clientWidth;
+    const windowHeight = window.innerHeight;
 
-    // Елемент вважається видимим, якщо хоча б частина його в viewport
-    const isVisible =
-      rect.bottom >= 0 &&
-      rect.right >= 0 &&
-      rect.top <= windowHeight &&
-      rect.left <= windowWidth;
+    return rect.top < windowHeight && rect.bottom > 0;
+  }
 
-    if (isVisible && !isInView) {
+  // Головна функція контролю анімації
+  function handleVisibility() {
+    if (!animation) return;
+
+    const visible = isElementInViewport();
+
+    if (visible && !isInView) {
       isInView = true;
-      if (animation && !animation.isPaused === false) {
-        animation.play();
-      }
-    } else if (!isVisible && isInView) {
+      animation.play();
+      console.log(`Playing ${containerId}`);
+    } else if (!visible && isInView) {
       isInView = false;
-      if (animation && !animation.isPaused) {
-        animation.pause();
-      }
+      animation.pause();
+      console.log(`Pausing ${containerId}`);
     }
   }
 
-  // Debounced версія перевірки видимості
-  const debouncedCheck = debounce(checkVisibility, 100);
+  // Для Telegram використовуємо тільки scroll listener
+  function setupScrollListener() {
+    let ticking = false;
 
-  // Intersection Observer з додатковими налаштуваннями для Telegram
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          isInView = true;
-          if (animation && animation.isPaused) {
-            animation.play();
-          }
-        } else {
-          isInView = false;
-          if (animation && !animation.isPaused) {
-            animation.pause();
-          }
-        }
-      });
-    },
-    {
-      root: null,
-      rootMargin: "50px",
-      threshold: [0, 0.1, 0.5, 1.0], // Множинні threshold для кращого відстеження
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleVisibility();
+          ticking = false;
+        });
+        ticking = true;
+      }
     }
-  );
 
-  // Запускаємо observer після завантаження
-  animation.addEventListener("DOMLoaded", () => {
-    observer.observe(container);
-
-    // Додаємо слухачі подій для додаткового контролю
-    window.addEventListener("scroll", debouncedCheck, { passive: true });
-    window.addEventListener("resize", debouncedCheck, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     // Початкова перевірка
-    setTimeout(checkVisibility, 100);
-  });
+    setTimeout(() => {
+      handleVisibility();
+    }, 200);
+  }
 
-  // Очищення при помилках
-  animation.addEventListener("error", () => {
-    console.error(`Animation error for ${containerId}`);
+  // Запускаємо після завантаження анімації
+  animation.addEventListener("DOMLoaded", () => {
+    setupScrollListener();
   });
 
   return animation;
 }
 
-// Створюємо анімації з desktop і mobile версіями (тільки якщо контейнери існують)
+// Створюємо анімації
 const animationBusiness = createLottieWithObserver(
   "#lottie-business",
-  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/689071294b93cedd9656e4a2_b-pc.json", // desktop
-  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfff8f9d598349b6d5634_b-mob.json" // mobile
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/689071294b93cedd9656e4a2_b-pc.json",
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfff8f9d598349b6d5634_b-mob.json"
 );
 
 const animationTechnical = createLottieWithObserver(
   "#lottie-technical",
-  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/6890712c5b9f9ce7f748f753_t-pc.json", // desktop
-  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfffd10371ed96c3bb44e_t-mob.json" // mobile
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/6890712c5b9f9ce7f748f753_t-pc.json",
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfffd10371ed96c3bb44e_t-mob.json"
 );
-
 document.addEventListener("DOMContentLoaded", () => {});
 const lineAnims = document.querySelectorAll(".line-anim");
 const scrubAnims = document.querySelectorAll(".scrub-anim");
