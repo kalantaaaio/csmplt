@@ -1,4 +1,5 @@
 // Функція для створення анімації з автоматичним observer та responsive path
+// Функція для створення анімації з автоматичним observer та responsive path
 function createLottieWithObserver(containerId, desktopPath, mobilePath) {
   // Перевіряємо чи існує контейнер
   const container = document.querySelector(containerId);
@@ -30,27 +31,66 @@ function createLottieWithObserver(containerId, desktopPath, mobilePath) {
     });
   });
 
+  // Функція для перезавантаження анімації при зміні розміру екрану
+  function handleResize() {
+    const container = document.querySelector(containerId);
+    if (!container) return; // Додаткова перевірка при resize
+
+    const newPath = getAnimationPath();
+    const currentPath = animation.path;
+
+    if (newPath !== currentPath) {
+      const wasPlaying = !animation.isPaused;
+
+      // Видаляємо стару анімацію
+      animation.destroy();
+
+      // Створюємо нову з правильним path
+      animation = lottie.loadAnimation({
+        container: container,
+        path: newPath,
+        renderer: "svg",
+        autoplay: false,
+      });
+
+      // Відновлюємо стан відтворення
+      animation.addEventListener("DOMLoaded", () => {
+        observer.observe(container);
+        if (wasPlaying) {
+          animation.play();
+        }
+      });
+    }
+  }
+
   // Запускаємо observer після завантаження
   animation.addEventListener("DOMLoaded", () => {
     observer.observe(container);
   });
 
   // Слухаємо зміни розміру екрану
+  window.addEventListener("resize", handleResize);
 
   return animation;
 }
 
 // Створюємо анімації з desktop і mobile версіями (тільки якщо контейнери існують)
-const animationBusiness = createLottieWithObserver(
-  "#lottie-business",
-  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/689071294b93cedd9656e4a2_b-pc.json", // desktop
-  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfff8f9d598349b6d5634_b-mob.json" // mobile
+const animationTestimonials = createLottieWithObserver(
+  "#drone-image",
+  "https://cdn.prod.website-files.com/681db2b316b1e2e6be057a6a/6839d9bf204a37e9e9670247_025front-compress.json", // desktop
+  "https://cdn.prod.website-files.com/681db2b316b1e2e6be057a6a/mobile-drone-animation.json" // mobile
 );
 
-const animationTechnical = createLottieWithObserver(
-  "#lottie-technical",
-  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/6890712c5b9f9ce7f748f753_t-pc.json", // desktop
-  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfffd10371ed96c3bb44e_t-mob.json" // mobile
+const animationHero = createLottieWithObserver(
+  "#hero-animation",
+  "path/to/hero-animation-desktop.json", // desktop
+  "path/to/hero-animation-mobile.json" // mobile
+);
+
+const animationFeatures = createLottieWithObserver(
+  "#features-animation",
+  "path/to/features-animation-desktop.json", // desktop
+  "path/to/features-animation-mobile.json" // mobile
 );
 
 document.addEventListener("DOMContentLoaded", () => {});
