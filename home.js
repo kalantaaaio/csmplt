@@ -1,111 +1,90 @@
-const lottieAnimations = new Map();
+// Функція для створення анімації з автоматичним observer та responsive path
+function createLottieWithObserver(containerId, desktopPath, mobilePath) {
+  // Перевіряємо чи існує контейнер
+  const container = document.querySelector(containerId);
+  if (!container) {
+    console.warn(`Container ${containerId} not found on this page`);
+    return null;
+  }
 
-function discoverLottieElements() {
-  const lottieElements = [];
-  const elementsWithDataSrc = document.querySelectorAll('[data-src*=".json"]');
-  const isMobile = window.innerWidth < 480;
+  // Визначаємо який path використовувати
+  function getAnimationPath() {
+    return window.innerWidth < 480 ? mobilePath : desktopPath;
+  }
 
-  elementsWithDataSrc.forEach((element) => {
-    element.classList.add("lottie-div");
-    const dataSrc = element.getAttribute("data-src");
-    const hasLottiePc = element.classList.contains("lottie-pc");
-    const hasLottieMob = element.classList.contains("lottie-mob");
-
-    if (dataSrc && dataSrc.includes(".json")) {
-      // On mobile (< 480px), only include lottie-mob elements
-      if (isMobile && hasLottieMob) {
-        lottieElements.push({
-          element: element,
-          path: dataSrc,
-        });
-        console.log(`Found mobile Lottie element with path: ${dataSrc}`);
-      }
-      // On desktop (>= 480px), include lottie-pc elements or elements without specific class
-      else if (!isMobile && (hasLottiePc || (!hasLottiePc && !hasLottieMob))) {
-        lottieElements.push({
-          element: element,
-          path: dataSrc,
-        });
-        console.log(`Found desktop Lottie element with path: ${dataSrc}`);
-      }
-    }
+  let animation = lottie.loadAnimation({
+    container: container,
+    path: getAnimationPath(),
+    renderer: "svg",
+    autoplay: false,
   });
 
-  return lottieElements;
-}
+  // Intersection Observer для цієї анімації
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        animation.play();
+      } else {
+        animation.pause();
+      }
+    });
+  });
 
-async function initLottieScrollAnimations() {
-  console.log("Initializing universal Lottie animations...");
+  // Функція для перезавантаження анімації при зміні розміру екрану
+  function handleResize() {
+    const container = document.querySelector(containerId);
+    if (!container) return; // Додаткова перевірка при resize
 
-  if (typeof lottie === "undefined") {
-    console.error("Lottie library not loaded yet");
-    return;
-  }
+    const newPath = getAnimationPath();
+    const currentPath = animation.path;
 
-  const discoveredLotties = discoverLottieElements();
+    if (newPath !== currentPath) {
+      const wasPlaying = !animation.isPaused;
 
-  for (const lottieData of discoveredLotties) {
-    const container = lottieData.element;
+      // Видаляємо стару анімацію
+      animation.destroy();
 
-    container.innerHTML = "";
-    container.removeAttribute("data-animation-type");
-    container.removeAttribute("data-autoplay");
-    container.removeAttribute("data-loop");
-    container.removeAttribute("data-direction");
-    container.removeAttribute("data-bounding");
-
-    try {
-      const animation = await new Promise((resolve, reject) => {
-        const anim = lottie.loadAnimation({
-          container: container,
-          path: lottieData.path,
-          renderer: "svg",
-          loop: true,
-          autoplay: false,
-        });
-
-        anim.addEventListener("DOMLoaded", () => resolve(anim));
-        anim.addEventListener("error", reject);
+      // Створюємо нову з правильним path
+      animation = lottie.loadAnimation({
+        container: container,
+        path: newPath,
+        renderer: "svg",
+        autoplay: false,
       });
 
-      lottieAnimations.set(container, animation);
-      console.log(`Lottie animation loaded: ${lottieData.path}`);
-
-      setupIntersectionObserver(container);
-    } catch (error) {
-      console.error(`Error loading Lottie animation: ${error}`);
-    }
-  }
-}
-
-function setupIntersectionObserver(element) {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const animation = lottieAnimations.get(entry.target);
-
-        if (animation) {
-          if (entry.isIntersecting) {
-            animation.play();
-            console.log("Playing Lottie animation");
-          } else {
-            animation.pause();
-            console.log("Pausing Lottie animation");
-          }
+      // Відновлюємо стан відтворення
+      animation.addEventListener("DOMLoaded", () => {
+        observer.observe(container);
+        if (wasPlaying) {
+          animation.play();
         }
       });
-    },
-    {
-      root: null,
-      rootMargin: "50px",
-      threshold: 0.1,
     }
-  );
+  }
 
-  observer.observe(element);
+  // Запускаємо observer після завантаження
+  animation.addEventListener("DOMLoaded", () => {
+    observer.observe(container);
+  });
+
+  // Слухаємо зміни розміру екрану
+  window.addEventListener("resize", handleResize);
+
+  return animation;
 }
 
-document.addEventListener("DOMContentLoaded", initLottieScrollAnimations);
+// Створюємо анімації з desktop і mobile версіями (тільки якщо контейнери існують)
+const animationBusiness = createLottieWithObserver(
+  "#lottie-business",
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/689071294b93cedd9656e4a2_b-pc.json", // desktop
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfff8f9d598349b6d5634_b-mob.json" // mobile
+);
+
+const animationTechnical = createLottieWithObserver(
+  "#lottie-technical",
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/6890712c5b9f9ce7f748f753_t-pc.json", // desktop
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfffd10371ed96c3bb44e_t-mob.json" // mobile
+);
 
 document.addEventListener("DOMContentLoaded", () => {});
 const lineAnims = document.querySelectorAll(".line-anim");
