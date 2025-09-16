@@ -1,5 +1,3 @@
-// Функція для створення анімації з автоматичним observer та responsive path
-// Функція для створення анімації з автоматичним observer та responsive path
 function createLottieWithObserver(containerId, desktopPath, mobilePath) {
   // Перевіряємо чи існує контейнер
   const container = document.querySelector(containerId);
@@ -20,77 +18,109 @@ function createLottieWithObserver(containerId, desktopPath, mobilePath) {
     autoplay: false,
   });
 
-  // Intersection Observer для цієї анімації
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
+  let debounceTimer = null;
+  let isInView = false;
+
+  // Debounce функція для запобігання частих викликів
+  function debounce(func, wait) {
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(debounceTimer);
+        func(...args);
+      };
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(later, wait);
+    };
+  }
+
+  // Функція для перевірки видимості елемента
+  function checkVisibility() {
+    if (!container || !animation) return;
+
+    const rect = container.getBoundingClientRect();
+    const windowHeight =
+      window.innerHeight || document.documentElement.clientHeight;
+    const windowWidth =
+      window.innerWidth || document.documentElement.clientWidth;
+
+    // Елемент вважається видимим, якщо хоча б частина його в viewport
+    const isVisible =
+      rect.bottom >= 0 &&
+      rect.right >= 0 &&
+      rect.top <= windowHeight &&
+      rect.left <= windowWidth;
+
+    if (isVisible && !isInView) {
+      isInView = true;
+      if (animation && !animation.isPaused === false) {
         animation.play();
-      } else {
+      }
+    } else if (!isVisible && isInView) {
+      isInView = false;
+      if (animation && !animation.isPaused) {
         animation.pause();
       }
-    });
-  });
-
-  // Функція для перезавантаження анімації при зміні розміру екрану
-  function handleResize() {
-    const container = document.querySelector(containerId);
-    if (!container) return; // Додаткова перевірка при resize
-
-    const newPath = getAnimationPath();
-    const currentPath = animation.path;
-
-    if (newPath !== currentPath) {
-      const wasPlaying = !animation.isPaused;
-
-      // Видаляємо стару анімацію
-      animation.destroy();
-
-      // Створюємо нову з правильним path
-      animation = lottie.loadAnimation({
-        container: container,
-        path: newPath,
-        renderer: "svg",
-        autoplay: false,
-      });
-
-      // Відновлюємо стан відтворення
-      animation.addEventListener("DOMLoaded", () => {
-        observer.observe(container);
-        if (wasPlaying) {
-          animation.play();
-        }
-      });
     }
   }
+
+  // Debounced версія перевірки видимості
+  const debouncedCheck = debounce(checkVisibility, 100);
+
+  // Intersection Observer з додатковими налаштуваннями для Telegram
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          isInView = true;
+          if (animation && animation.isPaused) {
+            animation.play();
+          }
+        } else {
+          isInView = false;
+          if (animation && !animation.isPaused) {
+            animation.pause();
+          }
+        }
+      });
+    },
+    {
+      root: null,
+      rootMargin: "50px",
+      threshold: [0, 0.1, 0.5, 1.0], // Множинні threshold для кращого відстеження
+    }
+  );
 
   // Запускаємо observer після завантаження
   animation.addEventListener("DOMLoaded", () => {
     observer.observe(container);
+
+    // Додаємо слухачі подій для додаткового контролю
+    window.addEventListener("scroll", debouncedCheck, { passive: true });
+    window.addEventListener("resize", debouncedCheck, { passive: true });
+
+    // Початкова перевірка
+    setTimeout(checkVisibility, 100);
   });
 
-  // Слухаємо зміни розміру екрану
-  window.addEventListener("resize", handleResize);
+  // Очищення при помилках
+  animation.addEventListener("error", () => {
+    console.error(`Animation error for ${containerId}`);
+  });
 
   return animation;
 }
 
 // Створюємо анімації з desktop і mobile версіями (тільки якщо контейнери існують)
-const animationTestimonials = createLottieWithObserver(
-  "#drone-image",
-  "https://cdn.prod.website-files.com/681db2b316b1e2e6be057a6a/6839d9bf204a37e9e9670247_025front-compress.json", // desktop
-  "https://cdn.prod.website-files.com/681db2b316b1e2e6be057a6a/mobile-drone-animation.json" // mobile
+const animationBusiness = createLottieWithObserver(
+  "#lottie-business",
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/689071294b93cedd9656e4a2_b-pc.json", // desktop
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfff8f9d598349b6d5634_b-mob.json" // mobile
 );
 
-const animationHero = createLottieWithObserver(
-  "#hero-animation",
-  "path/to/hero-animation-desktop.json", // desktop
-  "path/to/hero-animation-mobile.json" // mobile
-);
-
-const animationFeatures = createLottieWithObserver(
-  "#features-animation",
-  "path/to/features-animation-desktop.json", // desktop
-  "path/to/features-animation-mobile.json" // mobile
+const animationTechnical = createLottieWithObserver(
+  "#lottie-technical",
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/6890712c5b9f9ce7f748f753_t-pc.json", // desktop
+  "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfffd10371ed96c3bb44e_t-mob.json" // mobile
 );
 
 document.addEventListener("DOMContentLoaded", () => {});
