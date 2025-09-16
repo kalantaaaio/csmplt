@@ -18,59 +18,48 @@ function createLottieWithObserver(containerId, desktopPath, mobilePath) {
     autoplay: false,
   });
 
-  let isInView = false;
-
-  // Проста функція перевірки видимості
-  function isElementInViewport() {
-    const rect = container.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
-
-    return rect.top < windowHeight && rect.bottom > 0;
+  // Перевіряємо чи це Telegram браузер
+  function isTelegramBrowser() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    return (
+      userAgent.includes("telegram") ||
+      userAgent.includes("tgios") ||
+      userAgent.includes("tgandroid") ||
+      window.Telegram !== undefined
+    );
   }
 
-  // Головна функція контролю анімації
-  function handleVisibility() {
-    if (!animation) return;
-
-    const visible = isElementInViewport();
-
-    if (visible && !isInView) {
-      isInView = true;
+  if (isTelegramBrowser()) {
+    // В Telegram просто запускаємо анімацію з loop
+    animation.addEventListener("DOMLoaded", () => {
+      animation.loop = true;
       animation.play();
-      console.log(`Playing ${containerId}`);
-    } else if (!visible && isInView) {
-      isInView = false;
-      animation.pause();
-      console.log(`Pausing ${containerId}`);
-    }
-  }
-
-  // Для Telegram використовуємо тільки scroll listener
-  function setupScrollListener() {
-    let ticking = false;
-
-    function onScroll() {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleVisibility();
-          ticking = false;
+      console.log(`Auto-playing ${containerId} in Telegram browser`);
+    });
+  } else {
+    // В звичайних браузерах використовуємо Intersection Observer
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animation.play();
+            console.log(`Playing ${containerId}`);
+          } else {
+            animation.pause();
+            console.log(`Pausing ${containerId}`);
+          }
         });
-        ticking = true;
+      },
+      {
+        rootMargin: "50px",
+        threshold: 0.1,
       }
-    }
+    );
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    // Початкова перевірка
-    setTimeout(() => {
-      handleVisibility();
-    }, 200);
+    animation.addEventListener("DOMLoaded", () => {
+      observer.observe(container);
+    });
   }
-
-  // Запускаємо після завантаження анімації
-  animation.addEventListener("DOMLoaded", () => {
-    setupScrollListener();
-  });
 
   return animation;
 }
@@ -87,6 +76,7 @@ const animationTechnical = createLottieWithObserver(
   "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/6890712c5b9f9ce7f748f753_t-pc.json",
   "https://cdn.prod.website-files.com/682c57a19285ce16ab3a14a1/688cfffd10371ed96c3bb44e_t-mob.json"
 );
+
 document.addEventListener("DOMContentLoaded", () => {});
 const lineAnims = document.querySelectorAll(".line-anim");
 const scrubAnims = document.querySelectorAll(".scrub-anim");
