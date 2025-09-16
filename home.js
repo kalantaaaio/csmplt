@@ -30,45 +30,12 @@ function createLottieWithObserver(containerId, desktopPath, mobilePath) {
     });
   });
 
-  // Функція для перезавантаження анімації при зміні розміру екрану
-  function handleResize() {
-    const container = document.querySelector(containerId);
-    if (!container) return; // Додаткова перевірка при resize
-
-    const newPath = getAnimationPath();
-    const currentPath = animation.path;
-
-    if (newPath !== currentPath) {
-      const wasPlaying = !animation.isPaused;
-
-      // Видаляємо стару анімацію
-      animation.destroy();
-
-      // Створюємо нову з правильним path
-      animation = lottie.loadAnimation({
-        container: container,
-        path: newPath,
-        renderer: "svg",
-        autoplay: false,
-      });
-
-      // Відновлюємо стан відтворення
-      animation.addEventListener("DOMLoaded", () => {
-        observer.observe(container);
-        if (wasPlaying) {
-          animation.play();
-        }
-      });
-    }
-  }
-
   // Запускаємо observer після завантаження
   animation.addEventListener("DOMLoaded", () => {
     observer.observe(container);
   });
 
   // Слухаємо зміни розміру екрану
-  window.addEventListener("resize", handleResize);
 
   return animation;
 }
