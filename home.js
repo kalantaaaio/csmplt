@@ -1,3 +1,5 @@
+console.log("hello");
+
 // function createLottieWithObserver(containerId, desktopPath, mobilePath) {
 //   // Перевіряємо чи існує контейнер
 //   const container = document.querySelector(containerId);
